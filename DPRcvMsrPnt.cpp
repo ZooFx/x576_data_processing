@@ -87,16 +87,16 @@ VOID* DPRcvMsrPnt(VOID*)
 		ptSPRprtBuff->tDPAlgrthmPara.dAziCentroidTH = AZI_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dEleCentroidTH = ELE_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dRngCentroidTH = RNG_CELL*2;
-		ptSPRprtBuff->tDPAlgrthmPara.dVrCentroidTH  = 4;
+		ptSPRprtBuff->tDPAlgrthmPara.dVrCentroidTH  = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucTermntPntNumTH = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucTermntWindwLenTH = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmPntNumTH = 3;
 		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmWindwLenTH = 3;
 		ptSPRprtBuff->tDPAlgrthmPara.ucCancleInitPntNumTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.dModelNoise = 0.5;
+		ptSPRprtBuff->tDPAlgrthmPara.dModelNoise = 1;
 		ptSPRprtBuff->tDPAlgrthmPara.dVrMin = 0.1;
 		ptSPRprtBuff->tDPAlgrthmPara.dVrMax = 120;
-		ptSPRprtBuff->tDPAlgrthmPara.dEleAssocTH = ELE_3dB/10.0*5;
+		ptSPRprtBuff->tDPAlgrthmPara.dEleAssocTH = ELE_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dAltAssocTH = 10;
 		ptSPRprtBuff->tDPAlgrthmPara.dGamma = 6;
 		ptSPRprtBuff->tDPAlgrthmPara.dDefAngleForTmpTrackTH = 60;
@@ -106,10 +106,10 @@ VOID* DPRcvMsrPnt(VOID*)
 		ptSPRprtBuff->tDPAlgrthmPara.ucStandardInitPntNumTH = 4;
 		ptSPRprtBuff->tDPAlgrthmPara.ucStandardInitWindwLenTH = 5;
 
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitRngTH = 3500;
-		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitPntNumTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitWindwLenTH = 4;
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitAziAssocTH = AZI_3dB/10.0*15;
+		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitRngTH = 5000;
+		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitPntNumTH = 2;
+		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitWindwLenTH = 3;
+		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitAziAssocTH = AZI_3dB/10.0*8;
 		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitVrAssocTH  = 15;
 
 		ptSPRprtBuff->tDPAlgrthmPara.dHighConfVrTH = 5;   //高置信度速度阈值
@@ -222,7 +222,7 @@ INT32 ParseMsgDPRcvSPMsrPnt(UINT8* pRcvBuffer, SPReportDataInBuffInfo* ptSPRprtD
 	ptSPRprtDataBuff->tAttitude.dRoll = tCtrlList.sRoll_2 * 1e-2;
 	ptSPRprtDataBuff->tLLA.dLat = tCtrlList.lLat_9 * 1e-9;
 	ptSPRprtDataBuff->tLLA.dLon = tCtrlList.lLon_9 * 1e-9;
-	ptSPRprtDataBuff->tLLA.dAlt = tCtrlList.nAlt_3 * 1e-3;
+	ptSPRprtDataBuff->tLLA.dAlt = tCtrlList.nAlt_3 * 1e-2;
 
 
 	if (abs(tCtrlList.cBeamType) > 1) {
@@ -230,6 +230,8 @@ INT32 ParseMsgDPRcvSPMsrPnt(UINT8* pRcvBuffer, SPReportDataInBuffInfo* ptSPRprtD
 		return -3;
 	}
 	ptSPRprtDataBuff->enumBeamType = (enum BeamTypeInfo)tCtrlList.cBeamType;
+	ptSPRprtDataBuff->uncycle_id = tCtrlList.unCycleID;
+	ptSPRprtDataBuff->usbeam_id = tCtrlList.usBeamID;
 	ptSPRprtDataBuff->ucBeamCoordX = tCtrlList.ucBeamCoordX;
 	ptSPRprtDataBuff->ucBeamCoordY = tCtrlList.ucBeamCoordY;
 	ptSPRprtDataBuff->ucAntennaIdx = *(UINT8*)(pRcvBuffer+RADAR_INDEX_OFFSET);
@@ -265,6 +267,7 @@ INT32 ParseMsgDPRcvSPMsrPnt(UINT8* pRcvBuffer, SPReportDataInBuffInfo* ptSPRprtD
 		ptSPRprtDataBuff->atMsrPnrArr[usCnt].dPRT = ptSPRprtDataBuff->dPRT;
 		ptSPRprtDataBuff->atMsrPnrArr[usCnt].unCPI = ptSPRprtDataBuff->unCPI;
 		ptSPRprtDataBuff->atMsrPnrArr[usCnt].fConfidence = ptSPSendMstPnt->fConfidence;
+		ptSPRprtDataBuff->atMsrPnrArr[usCnt].untar_type  = ptSPSendMstPnt->untar_type;
 
 		ptSPSendMstPnt++;
 		usCnt++;

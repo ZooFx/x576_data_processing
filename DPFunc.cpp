@@ -231,6 +231,7 @@ INT32 CpyMsrPnt(SPReportDataInBuffInfo* ptSPRprtData, OneCPIMsrInfo& tOneCPIMsrP
 		tOneCPIMsrPnt.atMsrPntArr[i].ucAssocFlag    = 0;
 		tOneCPIMsrPnt.atMsrPntArr[i].ucCentroidFlag = 0;
 		tOneCPIMsrPnt.atMsrPntArr[i].dConfidence    = ptSPRprtData->atMsrPnrArr[i].fConfidence;
+		tOneCPIMsrPnt.atMsrPntArr[i].untar_type    = ptSPRprtData->atMsrPnrArr[i].untar_type;
 	}
 
 	return 0;
@@ -295,6 +296,10 @@ INT32 CpyMsrPntOneCoordX(std::map<BeamInfo, SPReportDataInBuffInfo*, CompareBeam
 		if(iter->first.ucBeamCoordX != tBeam.ucBeamCoordX)
 			continue;
 
+		//debug
+		if(iter->second->unCPI == 27629+1380327)	
+			INFO("debug");
+
 		for(UINT16 i = 0; i < iter->second->unMsrNum; i++)
 		{
 			if(iter->second->atMsrPnrArr[i].ucCentroidFlag == 1) continue;
@@ -331,6 +336,7 @@ INT32 CpyMsrPntOneCoordX(std::map<BeamInfo, SPReportDataInBuffInfo*, CompareBeam
 			tOneAziMajorMsrPnt.atMsrPntArr[tOneAziMajorMsrPnt.unMsrPntNum].ucAssocFlag = 0;
 			tOneAziMajorMsrPnt.atMsrPntArr[tOneAziMajorMsrPnt.unMsrPntNum].ucCentroidFlag = 0;
 			tOneAziMajorMsrPnt.atMsrPntArr[tOneAziMajorMsrPnt.unMsrPntNum].dConfidence = iter->second->atMsrPnrArr[i].fConfidence;
+			tOneAziMajorMsrPnt.atMsrPntArr[tOneAziMajorMsrPnt.unMsrPntNum].untar_type  = iter->second->atMsrPnrArr[i].untar_type;
 
 			//记录当前方位坐标数据中包含的边界信息
 			if (!bFlag && abs(iter->second->enumBeamType) == 1)
@@ -784,6 +790,23 @@ BOOL TmpTrackAssocMsrPntRAE(std::list<TmpTrackInfo>::iterator iter, MsrPntInfo* 
 	return true;
 }
 
+DOUBLE get_cross_range(double dv, double dt, double dr)
+{
+	//计算横向距离对应的角度
+
+	double dcross_range = 0;
+
+	if (dr <= 0)
+	{
+		ERROR("invalid argument, 'dr==0'");
+		return dcross_range;
+	}
+
+	dcross_range = (dv * dt / dr) / PI * 180.0;
+
+	return dcross_range;
+}
+
 BOOL TgtTrackAssocMsrPntRAE(std::list<TgtTrackPntInfo>::iterator iter, MsrPntInfo* ptMsrPnt)
 {
 	/*目标航迹RAE与点迹关联*/
@@ -802,7 +825,7 @@ BOOL TgtTrackAssocMsrPntRAE(std::list<TgtTrackPntInfo>::iterator iter, MsrPntInf
 	}
 
 
-	BOOL bFlag = false;
+	BOOL bFlag = iter->usTrackID == 19 && ptMsrPnt->unCPI == 1645305;
 	if(bFlag)
 		INFO("debug");
 	
@@ -847,11 +870,12 @@ BOOL TgtTrackAssocMsrPntRAE(std::list<TgtTrackPntInfo>::iterator iter, MsrPntInf
 	DOUBLE dDeltaAzi = fabs(ptMsrPnt->dAzi - iter->tRAEest.dAziEst);
 	if (dDeltaAzi > 180)
 		dDeltaAzi = 360 - dDeltaAzi;
-	if(dDeltaAzi > g_tAlgorithmPara.dQuickInitAziAssocTH)
+	double dcross_range_max = get_cross_range(g_tAlgorithmPara.dVrMax, dt, ptMsrPnt->dRng);
+	if(dDeltaAzi > g_tAlgorithmPara.dQuickInitAziAssocTH || dDeltaAzi > dcross_range_max)
 	{
 		if(bFlag)
-			INFO("(4) ID:{} dDeltaAzi:{:.2f}, AziTH:{:.2f}",
-					iter->usTrackID, dDeltaAzi,g_tAlgorithmPara.dQuickInitAziAssocTH);
+			INFO("(4) ID:{} dDeltaAzi:{:.2f}, AziTH:{:.2f}, cross_range_max:{:.2f}",
+					iter->usTrackID, dDeltaAzi,g_tAlgorithmPara.dQuickInitAziAssocTH, dcross_range_max);
 		return false;
 	}
 
@@ -1303,6 +1327,7 @@ INT32 AddMsrPnt2TmpTrack(std::list<TmpTrackInfo>::iterator iter, MsrPntInfo* pMs
 		iter->enumBeamType = pMsrPnt->enumBeamType;
 		iter->ucBeamCoordX = pMsrPnt->ucBeamCoordX;
 		iter->ucBeamCoordY = pMsrPnt->ucBeamCoordY;
+		iter->untar_type   = pMsrPnt->untar_type; 
 	}
 	else {
 		MsrPntInfo tMsrPnt;
@@ -1596,6 +1621,7 @@ INT32 TmpTrack2TgtTrack(std::list<TmpTrackInfo>::iterator iter, TgtTrackPntInfo&
 {
 	/*基于候选航迹新建确认航迹*/
 
+	tTgtTrackPnt.untar_type = iter->untar_type;
 	tTgtTrackPnt.unStartFrm = iter->unLstUpdFrm;
 	tTgtTrackPnt.unLstUpdFrm = iter->unLstUpdFrm;
 	tTgtTrackPnt.tLstUpdtDate = iter->tLstUpdtDate;
@@ -1704,9 +1730,11 @@ INT32  GetNewTmpTrack(MsrPntInfo* ptMsrPnt, TmpTrackInfo& tTmpTrack)
 	tTmpTrack.qtMsrArr.resize(0);
 	tTmpTrack.qtMsrArr.push_back(*ptMsrPnt);
 
+
+	tTmpTrack.untar_type    = ptMsrPnt->untar_type;
 	tTmpTrack.unStartFrm    = ptMsrPnt->unCPI;
 	tTmpTrack.unLstUpdFrm   = ptMsrPnt->unCPI;
-	tTmpTrack.tLstUpdtDate      = ptMsrPnt->tDate;
+	tTmpTrack.tLstUpdtDate  = ptMsrPnt->tDate;
 	tTmpTrack.dLstUpdTime   = ptMsrPnt->dTime;
 
 	tTmpTrack.usPntNum           = 1;
@@ -1717,9 +1745,9 @@ INT32  GetNewTmpTrack(MsrPntInfo* ptMsrPnt, TmpTrackInfo& tTmpTrack)
 	tTmpTrack.enumBeamType       = ptMsrPnt->enumBeamType;
 	tTmpTrack.ucBeamCoordX       = ptMsrPnt->ucBeamCoordX;
 	tTmpTrack.ucBeamCoordY       = ptMsrPnt->ucBeamCoordY;
-	tTmpTrack.cIdxLastNonEmpty  = 0;
-	tTmpTrack.cIdxLast2NonEmpty = 0;
-	tTmpTrack.enumInitMode      = GetInitModeForTmpTrack(&tTmpTrack);
+	tTmpTrack.cIdxLastNonEmpty   = 0;
+	tTmpTrack.cIdxLast2NonEmpty  = 0;
+	tTmpTrack.enumInitMode       = GetInitModeForTmpTrack(&tTmpTrack);
 
 	return 0;
 }
@@ -2916,6 +2944,7 @@ INT32 TgtTrackUpdt(std::list<TgtTrackPntInfo>::iterator iter, OneAziMajorMsrInfo
 		iter->tPntAssociatd.unCPI = ptMsrPnt->unCPI;
 		iter->tPntAssociatd.unIdx = ptMsrPnt->unIdx;
 		iter->tPntAssociatd.tMsrPnt = *ptMsrPnt;
+		// iter->untar_type = ptMsrPnt->untar_type;
 		iter->ucAntennaIdx = ptMsrPnt->ucAntennaIdx;
 		iter->enumBeamType = ptMsrPnt->enumBeamType;
 		iter->ucBeamCoordX = ptMsrPnt->ucBeamCoordX;
@@ -3022,6 +3051,7 @@ INT32 TgtTrackUpdtOneCPI(std::list<TgtTrackPntInfo>::iterator iter, OneCPIMsrInf
 		iter->tPntAssociatd.unCPI = ptMsrPnt->unCPI;
 		iter->tPntAssociatd.unIdx = ptMsrPnt->unIdx;
 		iter->tPntAssociatd.tMsrPnt = *ptMsrPnt;
+		iter->untar_type  = ptMsrPnt->untar_type;
 		iter->ucAntennaIdx = ptMsrPnt->ucAntennaIdx;
 		iter->enumBeamType = ptMsrPnt->enumBeamType;
 		iter->ucBeamCoordX = ptMsrPnt->ucBeamCoordX;
@@ -3630,7 +3660,8 @@ INT32 InsertMsrPacket2Map(SPReportDataInBuffInfo* ptSPReportData, std::map<BeamI
 		}
 		else
 		{
-			WARN("msr packet with CoordX:{}, CoordY:{}, PRT:{:.1f}us already exists", tBeam.ucBeamCoordX, tBeam.ucBeamCoordY, tBeam.dPRT*1e6);
+			WARN("msr packet with CoordX:{}, CoordY:{}, PRT:{:.1f}us already exists, ID in pakcket:({}, {}), ID in map:({},{})", 
+				tBeam.ucBeamCoordX, tBeam.ucBeamCoordY, tBeam.dPRT*1e6, ptSPReportData->uncycle_id, ptSPReportData->usbeam_id, Rtn.first->second->uncycle_id, Rtn.first->second->usbeam_id);
 			g_qptSPRprtBuffFree.push(ptSPReportData);
 			return -2;
 		}
@@ -3926,7 +3957,7 @@ INT32 CentroidTrackingAndSearch(SPReportDataInBuffInfo* ptSPRprtData, std::map<B
 	bzero(&tBeam, sizeof(BeamInfo));
 
 	for (auto iterList = ptLBeamCoordXInMap->begin(); iterList != ptLBeamCoordXInMap->end(); iterList++) {
-		if (abs(ptSPRprtData->ucBeamCoordX - iterList->ucBeamCoordX) > MAX_COORD_INTERVEL_CENTROID)
+		if (get_circlular_dis(ptSPRprtData->ucBeamCoordX, iterList->ucBeamCoordX) > MAX_COORD_INTERVEL_CENTROID)
 			continue;
 
 		tBeam.ucBeamCoordX = iterList->ucBeamCoordX;

@@ -47,17 +47,11 @@ INT32 main(INT32 nArgc, INT8* Argv[])
 	pthread_create(&tid_ScheduleRqstSend, NULL, DPSendScheduleRqst, NULL);
 	threadAffinity(58, 1, tid_ScheduleRqstSend);
 
-	//显控命令接收
-	pthread_t tid_DPRcvDisp;
-	pthread_create(&tid_DPRcvDisp, NULL, DPRcvDispCMD, NULL);
-	threadAffinity(59, 1, tid_DPRcvDisp);
-
 	//测试线程-加载量测点迹
-	pthread_t tid_LoadMsrPnt;
-	pthread_create(&tid_LoadMsrPnt, NULL, LoadMsrPnt, NULL);
-	pthread_join(tid_LoadMsrPnt, NULL);
+	// pthread_t tid_LoadMsrPnt;
+	// pthread_create(&tid_LoadMsrPnt, NULL, LoadMsrPnt, NULL);
+	// pthread_join(tid_LoadMsrPnt, NULL);
 
-	pthread_join(tid_DPRcvDisp, NULL);
 	pthread_join(tid_DataProcess, NULL);
 	pthread_join(tid_DPRcvMsrPnt, NULL);
 	pthread_join(tid_TrackSend, NULL);

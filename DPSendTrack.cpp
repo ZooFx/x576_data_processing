@@ -100,7 +100,7 @@ VOID* DPSendTrack(VOID*)
 				ptTrackBuff[usTgtNum].fVr  = iter->dVel;
 				ptTrackBuff[usTgtNum].fVel = iter->dVel;
 				ptTrackBuff[usTgtNum].fAcc = iter->dAcc;
-
+				ptTrackBuff[usTgtNum].untar_type = iter->untar_type;
 				usTgtNum++;
 			}
 
@@ -174,7 +174,8 @@ VOID* DPSendTrack(VOID*)
 				ptTrackBuff[0].fVr = iter->dVel;
 				ptTrackBuff[0].fVel = iter->dVel;
 				ptTrackBuff[0].fAcc = iter->dAcc;
-				
+				ptTrackBuff[0].untar_type = iter->untar_type;
+
 				tOneFrmTrackPointENUMsg.usTgtNum = usTgtNum;
 				tOneFrmTrackPointENUMsg.ptOneFrmTrackPntENU = ptTrackBuff;
 

@@ -45,10 +45,6 @@ VOID* DataProcess(VOID*)
 					// INFO("CPI:{}, Antenna:{}, Type:{}, X:{}, Y:{}, PRT:{:.1f}us, Azi:{:.2f}, Ele:{:.2f}, PntNum:{}, Time:{:.3f}",
 					// 		ptSPRprtData->unCPI, ptSPRprtData->ucAntennaIdx, (INT32)(ptSPRprtData->enumBeamType), ptSPRprtData->ucBeamCoordX, ptSPRprtData->ucBeamCoordY, ptSPRprtData->dPRT*1e6, ptSPRprtData->dAziMajor, ptSPRprtData->dEleMajor, ptSPRprtData->unMsrNum, ptSPRprtData->dTime);
 		//		}
-
-		//debug
-//		if(ptSPRprtData->ucAntennaIdx == 1 && ptSPRprtData->unCPI == 79448)
-
 		gettimeofday(&tBgn, NULL);
 
 		//获取数据包中天线编号

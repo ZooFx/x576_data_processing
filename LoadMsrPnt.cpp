@@ -10,7 +10,7 @@
 
 VOID* LoadMsrPnt(VOID*)
 {
-	INT8 acDataPath[] = "./MsrPntData/MsrPnt20260320132512.dat";
+	INT8 acDataPath[] = "./MsrPntData/MsrPnt20260331151902.dat";
 	INT32 nNum = 0, nRtn = 0;
 
 	UINT8* aucBuff = new UINT8 [BUFFER_SIZE];
@@ -121,16 +121,16 @@ VOID* LoadMsrPnt(VOID*)
 		ptSPRprtBuff->tDPAlgrthmPara.dAziCentroidTH = AZI_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dEleCentroidTH = ELE_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dRngCentroidTH = RNG_CELL*2;
-		ptSPRprtBuff->tDPAlgrthmPara.dVrCentroidTH  = 4;
+		ptSPRprtBuff->tDPAlgrthmPara.dVrCentroidTH  = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucTermntPntNumTH = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucTermntWindwLenTH = 5;
 		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmPntNumTH = 3;
 		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmWindwLenTH = 3;
 		ptSPRprtBuff->tDPAlgrthmPara.ucCancleInitPntNumTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.dModelNoise = 0.5;
+		ptSPRprtBuff->tDPAlgrthmPara.dModelNoise = 1;
 		ptSPRprtBuff->tDPAlgrthmPara.dVrMin = 0.1;
 		ptSPRprtBuff->tDPAlgrthmPara.dVrMax = 120;
-		ptSPRprtBuff->tDPAlgrthmPara.dEleAssocTH = ELE_3dB/10.0*5;
+		ptSPRprtBuff->tDPAlgrthmPara.dEleAssocTH = ELE_3dB/10.0*3;
 		ptSPRprtBuff->tDPAlgrthmPara.dAltAssocTH = 10;
 		ptSPRprtBuff->tDPAlgrthmPara.dGamma = 6;
 		ptSPRprtBuff->tDPAlgrthmPara.dDefAngleForTmpTrackTH = 60;
@@ -143,7 +143,7 @@ VOID* LoadMsrPnt(VOID*)
 		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitRngTH = 3500;
 		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitPntNumTH = 3;
 		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitWindwLenTH = 4;
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitAziAssocTH = AZI_3dB/10.0*15;
+		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitAziAssocTH = AZI_3dB/10.0*8;
 		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitVrAssocTH  = 15;
 
 		ptSPRprtBuff->tDPAlgrthmPara.dHighConfVrTH = 5;   //高置信度速度阈值

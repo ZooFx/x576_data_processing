@@ -119,6 +119,7 @@ typedef struct
 	DOUBLE dPRT;
 	UINT32 unCPI;       /*点迹捕获帧号*/
 	FLOAT32 fConfidence; //点迹源自目标的置信度
+	UINT32 untar_type; //目标识别结果，0：其他，1：无人机
 	UINT8 ucCentroidFlag; //凝聚标记
 } MSrPntInBuffInfo;
 
@@ -143,7 +144,9 @@ typedef struct
 	LLAInfo tLLA; //雷达LLA
 	UINT16 usCPINumOneCircle;          /*扫描一圈CPI数量*/
 	UINT8 ucAntennaIdx;                 /*天线编号，取值0-3*/
-	enum BeamTypeInfo enumBeamType;           //波位类型,-1:左边界，0:中间，1:右边界
+	enum BeamTypeInfo enumBeamType;     //波位类型,-1:左边界，0:中间，1:右边界
+	unsigned int uncycle_id;            //搜索圈序号
+	unsigned short usbeam_id;           //波位序号
 	UINT8 ucBeamCoordX;                  //波位X坐标
 	UINT8 ucBeamCoordY;                  //波位Y坐标
 	UINT32 unMsrNum;			               /*量测点迹数量*/
@@ -188,6 +191,7 @@ typedef struct
 	UINT8 ucAssocFlag;			 /*点迹关联标志，关联(1), 未关联(0)*/
 	UINT8 ucCentroidFlag;        /*点迹凝聚标志*/
 	DOUBLE dConfidence;
+	UINT32 untar_type; //目标识别结果, 0：其他，1：无人机
 } MsrPntInfo;
 
 //一帧点迹
@@ -258,6 +262,7 @@ typedef struct
 typedef struct
 {
 	UINT16 usTrackID;			             /*航迹批号*/
+	UINT32 untar_type;                       //目标识别结果, 0：其他，1：无人机
 	UINT16 usFromTmpTrackID;                 /*与目标航迹对应的暂态航迹号*/
 	UINT32 unStartFrm;			             /*起批帧号*/
 	UINT32 unLstUpdFrm;			             /*最后一次更新帧号*/
@@ -304,12 +309,13 @@ typedef struct
 //暂态航迹信息
 typedef struct
 {
-	UINT16 usPseudoTrackID;               /*伪航迹批号*/
-	UINT16 usToTrackID;                   /*起批后转至对应的目标航迹*/
-	UINT32 unStartFrm;					  /*首次捕获帧号*/
-	UINT32 unLstUpdFrm;					  /*最后一次更新帧号*/
-	DateInfo tLstUpdtDate;					/*最后一次更新日期*/	
-	DOUBLE dLstUpdTime;			          /*最后一次更新时间*/
+	UINT16 usPseudoTrackID;                   /*伪航迹批号*/
+	UINT32 untar_type;                        //目标识别结果, 0：其他，1：无人机
+	UINT16 usToTrackID;                       /*起批后转至对应的目标航迹*/
+	UINT32 unStartFrm;					      /*首次捕获帧号*/
+	UINT32 unLstUpdFrm;					      /*最后一次更新帧号*/
+	DateInfo tLstUpdtDate;					  /*最后一次更新日期*/	
+	DOUBLE dLstUpdTime;			              /*最后一次更新时间*/
 	UINT16 usPntNum;						  /*关联成功的点迹数量*/
 	UINT16 usInitWndwLen;				      /*起批窗长度*/
 	TmpTrackStateInfo enumTmpTrackState;      /*候选航迹状态*/

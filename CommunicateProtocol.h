@@ -121,7 +121,9 @@ typedef struct
 	INT8 cBeamType; //波位类型,-1:左边界，0:中间，1:右边界
 	UINT8 ucBeamCoordX; //波位横坐标
 	UINT8 ucBeamCoordY; //波位纵坐标
-	UINT8 aucRsv5[9];
+	UINT16 usBeamID; //波位序号
+	UINT32 unCycleID; //扫描圈计数
+	UINT8 aucRsv5[3];
 	UINT16 usTASID; //TAS目标批号
 	UINT16 usTASRngPred; //TAS预测距离
 	INT16 sTASVrPred_1; //TAS预测径向速度 单位：0.1m/s
@@ -150,7 +152,7 @@ typedef struct
 	UINT32 unRngCell;
 	UINT32 unDplCell;
 	FLOAT32 fConfidence; //点迹源自目标的置信度
-	UINT32 unRsv[1];
+	UINT32 untar_type;//目标识别结果, 0：其他，1：无人机
 }SPSendMsrPntInfo;
 
 //阵面ENU坐标系中单个航迹点信息
@@ -170,7 +172,8 @@ typedef struct
 	FLOAT32 fVr;//径向速度
 	FLOAT32 fVel;//空间速度
 	FLOAT32 fAcc;//加速度
-	FLOAT32 afRsv[3];
+	UINT32  untar_type;//目标识别结果, 0：其他，1：无人机
+	FLOAT32 afRsv[2];
 }OneTrackPointENUInfo;
 
 typedef struct
