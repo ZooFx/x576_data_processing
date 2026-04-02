@@ -182,10 +182,10 @@ VOID* DataProcess(VOID*)
 			CpyMsrPnt(&tSPRprtData, g_tOneCPIMsrPnt);
 
 			//TAS处理
-			nRtn = TrackTAS();
+			nRtn = TrackTAS(g_Lpending_conf_track, g_tSysPara.usTgtID);
 			if(nRtn == 0)
 			{
-				TgtTrackConfirmWindowUpdtOne(g_tSysPara.usTgtID);
+				TgtTrackConfirmWindowUpdtOne(g_Lpending_conf_track,g_tSysPara.usTgtID);
 
 				//debug
 				// for(auto iter = g_LTgtTrack.begin(); iter != g_LTgtTrack.end(); iter++)
@@ -199,15 +199,15 @@ VOID* DataProcess(VOID*)
 				// }
 
 				msg.unTriggerNum = g_tSysPara.usTgtID;
-				msg.pTrackList = std::make_shared<std::list<TgtTrackPntInfo>>(g_LTgtTrack);
+				msg.pTrackList = std::make_shared<std::list<TgtTrackPntInfo>>(g_Lpending_conf_track);
 				g_qTrackSendMsg.push(msg);
 
 				g_qunSendScheduleRqstrigger.push(g_tSysPara.usTgtID);
 
-				SaveTgtTrack(&g_LTgtTrack, true, g_tSysPara.usTgtID);
+				SaveTgtTrack(&g_Lpending_conf_track, true, g_tSysPara.usTgtID);
 
 				//航迹清除
-				TgtTrackClearOne(g_LTgtTrack, g_tSysPara.usTgtID);
+				TgtTrackClearOne(g_Lpending_conf_track, g_tSysPara.usTgtID);
 			}			
 			break;	
 		}
@@ -234,10 +234,10 @@ VOID* DataProcess(VOID*)
 			CpyMsrPnt(&tSPRprtData, g_tOneCPIMsrPnt);
 
 			//TAS处理
-			nRtn = TrackTAS();
+			nRtn = TrackTAS(g_LTgtTrack, g_tSysPara.usTgtID);
 			if(nRtn == 0)
 			{
-				TgtTrackTermWindowUpdtOne(g_tSysPara.usTgtID);
+				TgtTrackTermWindowUpdtOne(g_LTgtTrack, g_tSysPara.usTgtID);
 
 				//debug
 				// for(auto iter = g_LTgtTrack.begin(); iter != g_LTgtTrack.end(); iter++)

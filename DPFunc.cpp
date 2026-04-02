@@ -89,15 +89,20 @@ INT32 AlgorithmParaUpdt(SPReportDataInBuffInfo* ptSPRprtData, AlgorithmParaInfo&
 		return -1;
 	}
 
-	INT32 nRtn = 0;
+	// INT32 nRtn = 0;
+	// if( (nRtn = CheckAlgorithmPara(&(ptSPRprtData->tDPAlgrthmPara)) ) < 0 )
+	// {
+	// 	ERROR("algorithm parameter check failed.");
+	// 	return -2;
+	// }
+	// memcpy(&tAlgorithmPara, &(ptSPRprtData->tDPAlgrthmPara), sizeof(AlgorithmParaInfo));
 
-	if( (nRtn = CheckAlgorithmPara(&(ptSPRprtData->tDPAlgrthmPara)) ) < 0 )
-	{
-		ERROR("algorithm parameter check failed.");
-		return -2;
-	}
-
-	memcpy(&tAlgorithmPara, &(ptSPRprtData->tDPAlgrthmPara), sizeof(AlgorithmParaInfo));	
+	if (ptSPRprtData->enumWorkMode == TWS)
+		memcpy(&tAlgorithmPara, &(g_tAlgorithmParaTWS), sizeof(AlgorithmParaInfo));
+	else if (ptSPRprtData->enumWorkMode == TAS)
+		memcpy(&tAlgorithmPara, &(g_tAlgorithmParaTAS), sizeof(AlgorithmParaInfo));
+	else
+		ERROR("invalid work mode({})", static_cast<unsigned char>(ptSPRprtData->enumWorkMode));
 
 	return 0;
 }
@@ -1709,7 +1714,7 @@ enum TmpTrackInitModeInfo GetInitModeForTmpTrack(TmpTrackInfo* ptTmpTrack)
 {
 	//确定暂态航迹置信度
 
-	if (ptTmpTrack->qtMsrArr.at(ptTmpTrack->cIdxLastNonEmpty).dRng <= g_tAlgorithmPara.dHighConfRngTH && fabs(ptTmpTrack->qtMsrArr.at(ptTmpTrack->cIdxLastNonEmpty).dVr) <= g_tAlgorithmPara.dHighConfVrTH)
+	if (ptTmpTrack->qtMsrArr.at(ptTmpTrack->cIdxLastNonEmpty).dRng <= g_tAlgorithmPara.dSlowInitRngTH && fabs(ptTmpTrack->qtMsrArr.at(ptTmpTrack->cIdxLastNonEmpty).dVr) <= g_tAlgorithmPara.dSlowInitVrTH)
 		return SLOW;
 	else if (ptTmpTrack->qtMsrArr.at(ptTmpTrack->cIdxLastNonEmpty).dRng >= g_tAlgorithmPara.dQuickInitRngTH)
 		return QUICK;
@@ -1832,39 +1837,6 @@ DOUBLE GetStdForTmpTrack(std::list<TmpTrackInfo>::iterator iter, MsrPntMemberInf
 
 BOOL SlowCheckTmpTrack(std::list<TmpTrackInfo>::iterator iter) {
 	//暂态航迹可行性检验
-
-	//距离微分
-	if(iter->cIdxLastNonEmpty == iter->cIdxLast2NonEmpty)
-		return false;
-
-	DOUBLE dRngDiff = 0;
-	if ( (dRngDiff = fabs((iter->qtMsrArr.at(iter->cIdxLastNonEmpty).dRng - iter->qtMsrArr.at(iter->cIdxLast2NonEmpty).dRng) / (iter->qtMsrArr.at(iter->cIdxLastNonEmpty).dTime - iter->qtMsrArr.at(iter->cIdxLastNonEmpty).dTime))) <= g_tAlgorithmPara.dRngDiffTH )
-		return false;
-//	for (UINT16 i = 0; i < iter->usPntNum-1; i++) {
-//		if ( (dRngDiff = fabs((iter->atMsrArr[i+1].dRng - iter->atMsrArr[i].dRng) / (iter->atMsrArr[i+1].dTime - iter->atMsrArr[i].dTime))) <= g_tAlgorithmPara.dRngDiffTH )
-//			return false;
-//	}
-
-	DOUBLE dStd = 0;
-	//检查距离标准差
-	if ( (dStd = GetStdForTmpTrack(iter, RNG)) <= g_tAlgorithmPara.dStdRngTH)
-		return false;
-
-	//检查速度标准差
-	if ( (dStd = GetStdForTmpTrack(iter, VR)) <= g_tAlgorithmPara.dStdVrTH)
-		return false;
-
-	//检查俯仰角标准差
-	if ( (dStd = GetStdForTmpTrack(iter, ELE)) <= g_tAlgorithmPara.dStdEleTH)
-		return false;
-
-	//检查方位角标准差
-	if ( (dStd = GetStdForTmpTrack(iter, AZI)) <= g_tAlgorithmPara.dStdAziTH)
-		return false;
-
-	//检查信噪比标准差
-	if ( (dStd = GetStdForTmpTrack(iter, SNR)) <= g_tAlgorithmPara.dStdSNRTH)
-		return false;
 
 	return true;
 }
@@ -2363,7 +2335,9 @@ BOOL BindTgtTrackWithTmpTrack(TmpTrackInfo& tOneTmpTrack, TgtTrackPntInfo& tOneT
 	return true;
 }
 
-INT32 TryInit(std::list<TmpTrackInfo>::iterator iter, std::list<TgtTrackPntInfo>& LTgtTrack)
+
+
+INT32 TryInit(std::list<TmpTrackInfo>::iterator iter, std::list<TgtTrackPntInfo>& LTgtTrack, std::list<TgtTrackPntInfo>& Lpending_conf_track)
 {
 	//检查候选航迹起批状态
 
@@ -2387,37 +2361,82 @@ INT32 TryInit(std::list<TmpTrackInfo>::iterator iter, std::list<TgtTrackPntInfo>
 			break;
 	}
 
-	//点迹数量检查
+	//点迹数量和点迹序列一致性检查
 	if (iter->usPntNum < ucInitPntNumTH)
 		return 0;
-
-	//点迹序列一致性检查
-	if (bCheckState && LTgtTrack.size() < MAX_TGT_NUM) {
-		iter->enumTmpTrackState = TURN_TO_TGT_TRACK;
-
-		TgtTrackPntInfo tOneTgtTrackPnt;
-		TmpTrack2TgtTrack(iter, tOneTgtTrackPnt);
-		tOneTgtTrackPnt.usTrackID = GetTrackID(g_qusTrackID, g_vusTrackIDUsed);
-		BindTgtTrackWithTmpTrack(*iter, tOneTgtTrackPnt);
-
-		LTgtTrack.emplace_back(tOneTgtTrackPnt);
-
-		//debug
-		TrackSendMsg msg;
-		msg.unTriggerNum = LTgtTrack.back().usTrackID;
-		msg.pTrackList = std::make_shared<std::list<TgtTrackPntInfo>>(LTgtTrack);
-		g_qTrackSendMsg.push(msg);
-
-		if (g_tSysPara.enumWorkMode==TAS && GetTrackNumTAS(&LTgtTrack) < MAX_TAS_NUM) {
-			LTgtTrack.back().enumPredScheduleEvent = CONFIRM;
-			g_qunSendScheduleRqstrigger.push(LTgtTrack.back().usTrackID);
-		}
-
-		SaveTmpTrack(&g_LTmpTrack, true, iter->usPseudoTrackID);
-		SaveTgtTrack(&g_LTgtTrack, true, tOneTgtTrackPnt.usTrackID);
-	}
-	else
+	else if(!bCheckState)
+	{
 		iter->enumTmpTrackState = CANCEL;
+		return 0;
+	}
+
+	switch (g_tSysPara.enumWorkMode)
+	{
+	case TWS:
+		// 点迹序列一致性检查
+		if (LTgtTrack.size() < MAX_TGT_NUM)
+		{
+			iter->enumTmpTrackState = TURN_TO_TGT_TRACK;
+
+			TgtTrackPntInfo tOneTgtTrackPnt;
+			TmpTrack2TgtTrack(iter, tOneTgtTrackPnt);
+			tOneTgtTrackPnt.usTrackID = GetTrackID(g_qusTrackID, g_vusTrackIDUsed);
+			BindTgtTrackWithTmpTrack(*iter, tOneTgtTrackPnt);
+
+			LTgtTrack.emplace_back(tOneTgtTrackPnt);
+
+			TrackSendMsg msg;
+			msg.unTriggerNum = LTgtTrack.back().usTrackID;
+			msg.pTrackList = std::make_shared<std::list<TgtTrackPntInfo>>(LTgtTrack);
+			g_qTrackSendMsg.push(msg);
+
+			SaveTmpTrack(&g_LTmpTrack, true, iter->usPseudoTrackID);
+			SaveTgtTrack(&g_LTgtTrack, true, tOneTgtTrackPnt.usTrackID);
+		}
+		else
+			iter->enumTmpTrackState = CANCEL;
+		break;
+
+	case TAS:
+		if(GetTrackNumTAS(&LTgtTrack) < MAX_TAS_NUM)
+		{
+			iter->enumTmpTrackState = TURN_TO_TGT_TRACK;
+
+			TgtTrackPntInfo tOneTgtTrackPnt;
+			TmpTrack2TgtTrack(iter, tOneTgtTrackPnt);
+			tOneTgtTrackPnt.usTrackID = GetTrackID(g_quspending_conf_track_id, g_vuspending_conf_track_id_used);
+			tOneTgtTrackPnt.enumPredScheduleEvent = CONFIRM;
+			BindTgtTrackWithTmpTrack(*iter, tOneTgtTrackPnt);
+
+			Lpending_conf_track.emplace_back(tOneTgtTrackPnt);
+			g_qunSendScheduleRqstrigger.push(Lpending_conf_track.back().usTrackID);
+		}
+		else if(LTgtTrack.size() < MAX_TGT_NUM)
+		{
+			iter->enumTmpTrackState = TURN_TO_TGT_TRACK;
+
+			TgtTrackPntInfo tOneTgtTrackPnt;
+			TmpTrack2TgtTrack(iter, tOneTgtTrackPnt);
+			tOneTgtTrackPnt.usTrackID = GetTrackID(g_qusTrackID, g_vusTrackIDUsed);
+			BindTgtTrackWithTmpTrack(*iter, tOneTgtTrackPnt);
+
+			LTgtTrack.emplace_back(tOneTgtTrackPnt);
+
+			TrackSendMsg msg;
+			msg.unTriggerNum = LTgtTrack.back().usTrackID;
+			msg.pTrackList = std::make_shared<std::list<TgtTrackPntInfo>>(LTgtTrack);
+			g_qTrackSendMsg.push(msg);
+
+			SaveTmpTrack(&g_LTmpTrack, true, iter->usPseudoTrackID);
+			SaveTgtTrack(&g_LTgtTrack, true, tOneTgtTrackPnt.usTrackID);
+		}
+		else
+			iter->enumTmpTrackState = CANCEL;
+		break;
+
+	default:
+		break;
+	}
 
 	return 0;
 }
@@ -2443,7 +2462,7 @@ INT32 MsrPnt2TmpTrack(OneAziMajorMsrInfo* ptOneAziMajorMsrPnt, std::list<TmpTrac
 	return 0;
 }
 
-INT32 TrackInitTWS(OneAziMajorMsrInfo* ptOneAziMajorMsrPnt, std::list<TmpTrackInfo>& LTmpTrack, std::list<TgtTrackPntInfo>& LTgtTrack)
+INT32 TrackInitTWS(OneAziMajorMsrInfo* ptOneAziMajorMsrPnt, std::list<TmpTrackInfo>& LTmpTrack, std::list<TgtTrackPntInfo>& LTgtTrack, std::list<TgtTrackPntInfo>& Lpending_conf_track)
 {
 	/*TWS航迹起始*/
 
@@ -2455,7 +2474,7 @@ INT32 TrackInitTWS(OneAziMajorMsrInfo* ptOneAziMajorMsrPnt, std::list<TmpTrackIn
 		if (TmpTrackUpdt(iter, ptOneAziMajorMsrPnt) < 0)
 			continue;
 
-		TryInit(iter, LTgtTrack);
+		TryInit(iter, LTgtTrack, Lpending_conf_track);
 	}
 
 	//剩余点迹起始新候选航迹
@@ -3260,7 +3279,7 @@ INT32 TrackTWS()
 
 	TrackMaintainTWS(&g_tOneAziMajorMsrPnt, g_LTgtTrack);
 
-	TrackInitTWS(&g_tOneAziMajorMsrPnt, g_LTmpTrack, g_LTgtTrack);
+	TrackInitTWS(&g_tOneAziMajorMsrPnt, g_LTmpTrack, g_LTgtTrack, g_Lpending_conf_track);
 
 	return 0;
 }
@@ -3286,10 +3305,10 @@ INT32 FindTgtTrack(std::list<TgtTrackPntInfo>* pLTgtTrack, UINT16 usTrackID)
 }
 
 
-INT32 TrackTAS()
+INT32 TrackTAS(std::list<TgtTrackPntInfo>& LTgtTrack, unsigned short ustrack_id)
 {
 	//搜索特定批号的目标在List中的索引
-	INT32 nTgtIdx = FindTgtTrack(&g_LTgtTrack, g_tSysPara.usTgtID);
+	INT32 nTgtIdx = FindTgtTrack(&LTgtTrack, ustrack_id);
 	if(nTgtIdx == -1)
 	{
 		// ERROR("no such target track with ID:{}", g_tSysPara.usTgtID);
@@ -3297,7 +3316,7 @@ INT32 TrackTAS()
 	}
 
 	//获得特定批号航迹的迭代器
-	std::list<TgtTrackPntInfo>::iterator iter = g_LTgtTrack.begin();
+	std::list<TgtTrackPntInfo>::iterator iter = LTgtTrack.begin();
 	std::advance(iter, nTgtIdx);
 
 	//时间异常检查
@@ -3440,13 +3459,13 @@ INT32 TgtTrackTermWindowUpdt(UINT8 ucAntennaIdx)
 	return 0;
 }
 
-INT32 TgtTrackConfirmWindowUpdtOne(UINT32 unTriggerNum)
+INT32 TgtTrackConfirmWindowUpdtOne(std::list<TgtTrackPntInfo>& LTgtTrack, UINT32 unTriggerNum)
 {
 	/*目标航迹确认窗口更新*/
 
-	INT32 nTgtIdx = FindTgtTrack(&g_LTgtTrack, unTriggerNum);
-	std::list<TgtTrackPntInfo>::iterator iter = g_LTgtTrack.begin();
-	if(nTgtIdx >= 0 && iter != g_LTgtTrack.end()){
+	INT32 nTgtIdx = FindTgtTrack(&LTgtTrack, unTriggerNum);
+	std::list<TgtTrackPntInfo>::iterator iter = LTgtTrack.begin();
+	if(nTgtIdx >= 0 && iter != LTgtTrack.end()){
 		std::advance(iter, nTgtIdx);
 	}
 	else{
@@ -3472,13 +3491,13 @@ INT32 TgtTrackConfirmWindowUpdtOne(UINT32 unTriggerNum)
 	return 0;
 }
 
-INT32 TgtTrackTermWindowUpdtOne(UINT32 unTriggerNum)
+INT32 TgtTrackTermWindowUpdtOne(std::list<TgtTrackPntInfo>& LTgtTrack, UINT32 unTriggerNum)
 {
 	/*目标航迹终结窗口更新*/
 
-	INT32 nTgtIdx = FindTgtTrack(&g_LTgtTrack, unTriggerNum);
-	std::list<TgtTrackPntInfo>::iterator iter = g_LTgtTrack.begin();
-	if(nTgtIdx >= 0 && iter != g_LTgtTrack.end()){
+	INT32 nTgtIdx = FindTgtTrack(&LTgtTrack, unTriggerNum);
+	std::list<TgtTrackPntInfo>::iterator iter = LTgtTrack.begin();
+	if(nTgtIdx >= 0 && iter != LTgtTrack.end()){
 		std::advance(iter, nTgtIdx);
 	}
 	else{

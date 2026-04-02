@@ -8,15 +8,15 @@ extern INT32 SysParaUpdt(SPReportDataInBuffInfo* ptSPRprtData, SysParaInfo& tSys
 extern INT32 CpyMsrPnt(SPReportDataInBuffInfo* ptSPRprtData, OneCPIMsrInfo& tOneCPIMsrPnt);
 extern INT32 CentroidMsrPnt(OneCPIMsrInfo& tOneFrmMsr, DOUBLE dSNRRef, DOUBLE dB, DOUBLE dAzi3dB, DOUBLE dEle3dB, DOUBLE dFc, DOUBLE dPRT, UINT32 unPulseNum, enum MsrStdEstFashionInfo enumMsrStdEstFashion, AlgorithmParaInfo tAlgrthmPara);
 extern INT32 TrackTWS();
-extern INT32 TrackTAS();
+extern INT32 TrackTAS(std::list<TgtTrackPntInfo>& LTgtTrack, unsigned short ustrack_id);
 extern INT32 TgtTrackClear(std::list<TgtTrackPntInfo>& LTgtTrack, UINT8);
 extern INT32 TgtTrackClearOne(std::list<TgtTrackPntInfo>& LTgtTrack, UINT32 unTriggerNum);
 extern INT32 TmpTrackClear(std::list<TmpTrackInfo>& vTmpTrack, UINT8);
 extern INT32 FindTgtTrack(std::list<TgtTrackPntInfo>* pLTgtTrack, UINT16 usTrackID);
 extern INT32 TgtTrackTermWindowUpdt(UINT8);
 extern INT32 TmpTrackInitWindowUpdt(UINT8);
-extern INT32 TgtTrackConfirmWindowUpdtOne(UINT32 unTriggerNum);
-extern INT32 TgtTrackTermWindowUpdtOne(UINT32 unTriggerNum);
+extern INT32 TgtTrackConfirmWindowUpdtOne(std::list<TgtTrackPntInfo>& LTgtTrack, UINT32 unTriggerNum);
+extern INT32 TgtTrackTermWindowUpdtOne(std::list<TgtTrackPntInfo>& LTgtTrack, UINT32 unTriggerNum);
 extern INT32 RecoverAssocFlag(UINT8);
 extern INT32 SaveTgtTrack(std::list<TgtTrackPntInfo>* pLTgtTrack, bool bSaveFlag, unsigned short ustrack_id);
 extern INT32 SaveTmpTrack(std::list<TmpTrackInfo>* pLTmpTrack, bool bSaveFlag, unsigned short ustrack_id);

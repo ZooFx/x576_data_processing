@@ -41,6 +41,7 @@ VOID* DPSendScheduleRqst(VOID*)
 	UINT32 unTgtTrackID = 0, unSendCnt = 0;
 	UINT16 usRqstCnt = 0, usMsgLen = 0;
 	std::list<TgtTrackPntInfo>::iterator iter;
+	std::list<TgtTrackPntInfo> Ltgt_track;
 
 	ScheduleRqstMsg tScheduleRqstMsg;
 	bzero(&tScheduleRqstMsg, sizeof(ScheduleRqstMsg));
@@ -50,12 +51,16 @@ VOID* DPSendScheduleRqst(VOID*)
 	while(true)
 	{
 		unTgtTrackID = g_qunSendScheduleRqstrigger.pop();
+		if (unTgtTrackID > 10000)
+			Ltgt_track = g_Lpending_conf_track;
+		else
+			Ltgt_track = g_LTgtTrack;
 
-		nTgtIdx = FindTgtTrack(&g_LTgtTrack, unTgtTrackID);
+		nTgtIdx = FindTgtTrack(&Ltgt_track, unTgtTrackID);
 
 		if(nTgtIdx >= 0)
 		{
-			iter = g_LTgtTrack.begin();
+			iter = Ltgt_track.begin();
 			std::advance(iter, nTgtIdx);
 
 			if(iter->enumTrackUpdMode == TERMINATE)

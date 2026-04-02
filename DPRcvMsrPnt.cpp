@@ -79,59 +79,7 @@ VOID* DPRcvMsrPnt(VOID*)
             g_qptSPRprtBuffFree.push(ptSPRprtBuff);
             continue;
         }
-
-		//debug
-//		INFO("Rcv CPI:{}, microsec:{}", ptSPRprtBuff->unCPI, ptSPRprtBuff->tDate.unMicroSec);
-
-		//debug,处理参数调整
-		ptSPRprtBuff->tDPAlgrthmPara.dAziCentroidTH = AZI_3dB/10.0*3;
-		ptSPRprtBuff->tDPAlgrthmPara.dEleCentroidTH = ELE_3dB/10.0*3;
-		ptSPRprtBuff->tDPAlgrthmPara.dRngCentroidTH = RNG_CELL*2;
-		ptSPRprtBuff->tDPAlgrthmPara.dVrCentroidTH  = 5;
-		ptSPRprtBuff->tDPAlgrthmPara.ucTermntPntNumTH = 5;
-		ptSPRprtBuff->tDPAlgrthmPara.ucTermntWindwLenTH = 5;
-		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmPntNumTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.ucConfirmWindwLenTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.ucCancleInitPntNumTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.dModelNoise = 1;
-		ptSPRprtBuff->tDPAlgrthmPara.dVrMin = 0.1;
-		ptSPRprtBuff->tDPAlgrthmPara.dVrMax = 120;
-		ptSPRprtBuff->tDPAlgrthmPara.dEleAssocTH = ELE_3dB/10.0*3;
-		ptSPRprtBuff->tDPAlgrthmPara.dAltAssocTH = 10;
-		ptSPRprtBuff->tDPAlgrthmPara.dGamma = 6;
-		ptSPRprtBuff->tDPAlgrthmPara.dDefAngleForTmpTrackTH = 60;
-		ptSPRprtBuff->tDPAlgrthmPara.dDefAngleForTgtTrackTH = 180;
-		ptSPRprtBuff->tDPAlgrthmPara.dConfidenceTH = 0.5;
-
-		ptSPRprtBuff->tDPAlgrthmPara.ucStandardInitPntNumTH = 4;
-		ptSPRprtBuff->tDPAlgrthmPara.ucStandardInitWindwLenTH = 5;
-
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitRngTH = 5000;
-		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitPntNumTH = 2;
-		ptSPRprtBuff->tDPAlgrthmPara.ucQuickInitWindwLenTH = 3;
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitAziAssocTH = AZI_3dB/10.0*8;
-		ptSPRprtBuff->tDPAlgrthmPara.dQuickInitVrAssocTH  = 15;
-
-		ptSPRprtBuff->tDPAlgrthmPara.dHighConfVrTH = 5;   //高置信度速度阈值
-		ptSPRprtBuff->tDPAlgrthmPara.dHighConfRngTH = 1000;  //高置信度距离阈值
-        ptSPRprtBuff->tDPAlgrthmPara.ucSlowInitPntNumTH = 6;
-        ptSPRprtBuff->tDPAlgrthmPara.ucSlowInitWindwLenTH = 8;
-		ptSPRprtBuff->tDPAlgrthmPara.dSlowInitAziAssocTH = 1.6; //方位关联阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dSlowInitVrAssocTH = 7; //多普勒速度关联阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dRngDiffTH = ptSPRprtBuff->tDPAlgrthmPara.dHighConfVrTH*0.8; //距离微分阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dStdRngTH = 15;  //距离标准差阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dStdAziTH = 0.8;  //方位角标准差阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dStdEleTH = 0.6;  //俯仰角标准差阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dStdVrTH = 1.5;  //多普勒速度标准差阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.dStdSNRTH = 1.5;  //信噪比标准差阈值-低置信度航迹
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[2] = 28.2;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[3] = 30.73;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[4] = 32.67;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[5] = 34.26;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[6] = 35.57;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[7] = 36.73;
-		ptSPRprtBuff->tDPAlgrthmPara.adSNRAccumTH[8] = 37.88;
-
+		
 		//数据置入缓冲区
 		g_qptSPRprtData.push(ptSPRprtBuff);
 	

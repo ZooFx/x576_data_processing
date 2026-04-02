@@ -18,23 +18,81 @@ INT32 InitSPRprtBuffFreePtrQ()
 INT32 InitAlgorithmPara()
 {
 	//初始化算法参数
-	
 	bzero(&g_tAlgorithmPara, sizeof(AlgorithmParaInfo));
-	g_tAlgorithmPara.ucQuickInitPntNumTH = 3;
-	g_tAlgorithmPara.ucQuickInitWindwLenTH = 4;
-	g_tAlgorithmPara.ucTermntPntNumTH = 3;
-	g_tAlgorithmPara.ucTermntWindwLenTH = 3;
-	g_tAlgorithmPara.dModelNoise = 1e-2;
-	g_tAlgorithmPara.dVrMin = 1;
-	g_tAlgorithmPara.dVrMax = 30;
-	g_tAlgorithmPara.dQuickInitAziAssocTH = 1.5;
-	g_tAlgorithmPara.dEleAssocTH = 2;
-	g_tAlgorithmPara.dQuickInitVrAssocTH = 10;
-	g_tAlgorithmPara.dGamma = 16;
-	g_tAlgorithmPara.dRngCentroidTH = 15; //20MHz采样率，2个采样单元长度
-	g_tAlgorithmPara.dAziCentroidTH = 0.37; //1/10方位波束宽度
-	g_tAlgorithmPara.dEleCentroidTH = 0.72; //1/10俯仰波束宽度
-	g_tAlgorithmPara.dVrCentroidTH = 6; //PRT=25ms,128个脉冲,一个多普勒通道约3m/s，2个通道
+
+	//TWS模式
+	bzero(&g_tAlgorithmParaTWS, sizeof(AlgorithmParaInfo));
+	g_tAlgorithmParaTWS.dAziCentroidTH = AZI_3dB / 10.0 * 3;
+	g_tAlgorithmParaTWS.dEleCentroidTH = ELE_3dB / 10.0 * 3;
+	g_tAlgorithmParaTWS.dRngCentroidTH = RNG_CELL * 2;
+	g_tAlgorithmParaTWS.dVrCentroidTH = 5;
+	g_tAlgorithmParaTWS.ucTermntPntNumTH = 5;
+	g_tAlgorithmParaTWS.ucTermntWindwLenTH = 5;
+	g_tAlgorithmParaTWS.ucConfirmPntNumTH = 3;
+	g_tAlgorithmParaTWS.ucConfirmWindwLenTH = 3;
+	g_tAlgorithmParaTWS.ucCancleInitPntNumTH = 3;
+	g_tAlgorithmParaTWS.dModelNoise = 1;
+	g_tAlgorithmParaTWS.dVrMin = 0.1;
+	g_tAlgorithmParaTWS.dVrMax = 120;
+	g_tAlgorithmParaTWS.dEleAssocTH = ELE_3dB / 10.0 * 3;
+	g_tAlgorithmParaTWS.dAltAssocTH = 10;
+	g_tAlgorithmParaTWS.dGamma = 6;
+	g_tAlgorithmParaTWS.dDefAngleForTmpTrackTH = 60;
+	g_tAlgorithmParaTWS.dDefAngleForTgtTrackTH = 180;
+	g_tAlgorithmParaTWS.dConfidenceTH = 0.5;
+
+	g_tAlgorithmParaTWS.ucStandardInitPntNumTH = 4;
+	g_tAlgorithmParaTWS.ucStandardInitWindwLenTH = 5;
+
+	g_tAlgorithmParaTWS.dQuickInitRngTH = 5000;
+	g_tAlgorithmParaTWS.ucQuickInitPntNumTH = 2;
+	g_tAlgorithmParaTWS.ucQuickInitWindwLenTH = 3;
+	g_tAlgorithmParaTWS.dQuickInitAziAssocTH = AZI_3dB / 10.0 * 8;
+	g_tAlgorithmParaTWS.dQuickInitVrAssocTH = 15;
+
+	g_tAlgorithmParaTWS.dSlowInitVrTH = 5;	   // 慢起批速度阈值
+	g_tAlgorithmParaTWS.dSlowInitRngTH = 1000; // 慢起批距离阈值
+	g_tAlgorithmParaTWS.ucSlowInitPntNumTH = 6;
+	g_tAlgorithmParaTWS.ucSlowInitWindwLenTH = 8;
+	g_tAlgorithmParaTWS.dSlowInitAziAssocTH = 1.6; // 方位关联阈值-低置信度航迹
+	g_tAlgorithmParaTWS.dSlowInitVrAssocTH = 7;	   // 多普勒速度关联阈值-低置信度航迹
+
+	//TWS模式
+	bzero(&g_tAlgorithmParaTAS, sizeof(AlgorithmParaInfo));
+	g_tAlgorithmParaTAS.dAziCentroidTH = AZI_3dB / 10.0 * 3;
+	g_tAlgorithmParaTAS.dEleCentroidTH = ELE_3dB / 10.0 * 3;
+	g_tAlgorithmParaTAS.dRngCentroidTH = RNG_CELL * 2;
+	g_tAlgorithmParaTAS.dVrCentroidTH = 5;
+	g_tAlgorithmParaTAS.ucTermntPntNumTH = 5;
+	g_tAlgorithmParaTAS.ucTermntWindwLenTH = 5;
+	g_tAlgorithmParaTAS.ucConfirmPntNumTH = 3;
+	g_tAlgorithmParaTAS.ucConfirmWindwLenTH = 3;
+	g_tAlgorithmParaTAS.ucCancleInitPntNumTH = 3;
+	g_tAlgorithmParaTAS.dModelNoise = 1;
+	g_tAlgorithmParaTAS.dVrMin = 0.1;
+	g_tAlgorithmParaTAS.dVrMax = 120;
+	g_tAlgorithmParaTAS.dEleAssocTH = ELE_3dB / 10.0 * 3;
+	g_tAlgorithmParaTAS.dAltAssocTH = 10;
+	g_tAlgorithmParaTAS.dGamma = 6;
+	g_tAlgorithmParaTAS.dDefAngleForTmpTrackTH = 60;
+	g_tAlgorithmParaTAS.dDefAngleForTgtTrackTH = 180;
+	g_tAlgorithmParaTAS.dConfidenceTH = 0.5;
+
+	g_tAlgorithmParaTAS.ucStandardInitPntNumTH = 4;
+	g_tAlgorithmParaTAS.ucStandardInitWindwLenTH = 5;
+
+	g_tAlgorithmParaTAS.dQuickInitRngTH = 5000;
+	g_tAlgorithmParaTAS.ucQuickInitPntNumTH = 2;
+	g_tAlgorithmParaTAS.ucQuickInitWindwLenTH = 3;
+	g_tAlgorithmParaTAS.dQuickInitAziAssocTH = AZI_3dB / 10.0 * 8;
+	g_tAlgorithmParaTAS.dQuickInitVrAssocTH = 15;
+
+	g_tAlgorithmParaTAS.dSlowInitVrTH = 5;	   // 慢起批速度阈值
+	g_tAlgorithmParaTAS.dSlowInitRngTH = 1000; // 慢起批距离阈值
+	g_tAlgorithmParaTAS.ucSlowInitPntNumTH = 6;
+	g_tAlgorithmParaTAS.ucSlowInitWindwLenTH = 8;
+	g_tAlgorithmParaTAS.dSlowInitAziAssocTH = 1.6; // 方位关联阈值-低置信度航迹
+	g_tAlgorithmParaTAS.dSlowInitVrAssocTH  = 7;	   // 多普勒速度关联阈值-低置信度航迹
 	
 	return 0;
 }
@@ -73,6 +131,18 @@ INT32 InitTrackIDQueue()
 	for(UINT32 i = 1; i <= 65535; i++)
 	{
 		g_qusTrackID.push(i);
+	}
+
+	return 0;
+}
+
+INT32 init_pending_conf_track_id()
+{
+	//初始化待确认航迹批号队列
+
+	for(UINT32 i = 10001; i <= 65535; i++)
+	{
+		g_quspending_conf_track_id.push(i);
 	}
 
 	return 0;

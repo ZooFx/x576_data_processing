@@ -12,7 +12,7 @@ extern SPReportDataInBuffInfo g_atSPRprtBuff[MAX_PAK_NUM];
 extern safe_queue<SPReportDataInBuffInfo*> g_qptSPRprtBuffFree; //信处上报数据空闲缓冲区
 extern safe_queue<SPReportDataInBuffInfo*> g_qptSPRprtData; //信处上报数据
 
-extern	AlgorithmParaInfo g_tAlgorithmPara;
+extern AlgorithmParaInfo g_tAlgorithmPara, g_tAlgorithmParaTWS, g_tAlgorithmParaTAS;
 extern SysParaInfo g_tSysPara;
 extern OneCPIMsrInfo g_tOneCPIMsrPnt;
 extern OneAziMajorMsrInfo g_tOneAziMajorMsrPnt;
@@ -20,10 +20,14 @@ extern OneCircleMsrInfo g_tOneCircleMsrPnt;
 
 extern std::list<TgtTrackPntInfo> g_LTgtTrack;
 extern std::list<TgtTrackPntInfo> g_LTgtTrackCpy;
+extern std::list<TgtTrackPntInfo> g_Lpending_conf_track;
 extern std::list<TmpTrackInfo> g_LTmpTrack;
 
 extern std::queue<UINT16> g_qusTrackID; //未使用过的航迹批号
 extern std::vector<UINT16> g_vusTrackIDUsed; //使用过的航迹批号  
+
+extern std::queue<UINT16> g_quspending_conf_track_id; //未使用过的航迹批号
+extern std::vector<UINT16> g_vuspending_conf_track_id_used; //使用过的航迹批号
 
 extern std::queue<UINT16> g_qusPseudoTrackID; //未使用过的伪航迹批号
 extern std::vector<UINT16> g_vusPseudoTrackIDUsed; //使用过的伪航迹批号

@@ -36,46 +36,43 @@ typedef struct
 
 
 //数据处理算法参数
-typedef struct
-{
-	UINT8 ucQuickInitWindwLenTH;
-	UINT8 ucQuickInitPntNumTH;
-	UINT8 ucStandardInitWindwLenTH;
-	UINT8 ucStandardInitPntNumTH;
-    UINT8 ucSlowInitWindwLenTH;
-    UINT8 ucSlowInitPntNumTH;
-	UINT8 ucConfirmWindwLenTH;
-	UINT8 ucConfirmPntNumTH;
-	UINT8 ucTermntWindwLenTH;
-	UINT8 ucTermntPntNumTH;
-	UINT8 ucCancleInitPntNumTH;
-	DOUBLE dModelNoise;
-	DOUBLE dVrMin; //径向速度最小值
-	DOUBLE dVrMax; //径向速度最大值
-	DOUBLE dQuickInitAziAssocTH; //方位关联阈值
-	DOUBLE dEleAssocTH; //俯仰关联阈值
-	DOUBLE dAltAssocTH; //高度关联阈值
-	DOUBLE dQuickInitVrAssocTH; //多普勒速度关联阈值
-	DOUBLE dGamma;
-	DOUBLE dRngCentroidTH;  //距离凝聚波门
-	DOUBLE dAziCentroidTH;  //方位凝聚波门
-	DOUBLE dEleCentroidTH;  //俯仰凝聚波门
-	DOUBLE dVrCentroidTH;   //多普勒速度凝聚波门
-	DOUBLE dDefAngleForTmpTrackTH; //偏转角阈值
-	DOUBLE dDefAngleForTgtTrackTH; //偏转角阈值
-	DOUBLE dHighConfVrTH;   //高置信度速度阈值
-	DOUBLE dHighConfRngTH;  //高置信度距离阈值
-	DOUBLE dQuickInitRngTH;  //快速起批距离阈值
-	DOUBLE dSlowInitAziAssocTH; //方位关联阈值-低置信度航迹
-	DOUBLE dSlowInitVrAssocTH; //多普勒速度关联阈值-低置信度航迹
-	DOUBLE dRngDiffTH; //距离微分阈值-低置信度航迹
-	DOUBLE dStdRngTH;  //距离标准差阈值-低置信度航迹
-	DOUBLE dStdAziTH;  //方位角标准差阈值-低置信度航迹
-	DOUBLE dStdEleTH;  //俯仰角标准差阈值-低置信度航迹
-	DOUBLE dStdVrTH;  //多普勒速度标准差阈值-低置信度航迹
-	DOUBLE dStdSNRTH;  //信噪比标准差阈值-低置信度航迹
-	DOUBLE dConfidenceTH; //量测源自目标的置信度阈值
-	DOUBLE adSNRAccumTH[SNR_ACCUM_ARR_LEN];  //SNR积累阈值-低置信度航迹
+typedef struct {
+    double dAziCentroidTH;         // 方位质心阈值
+    double dEleCentroidTH;         // 仰角质心阈值
+    double dRngCentroidTH;         // 距离质心阈值
+    double dVrCentroidTH;          // 速度质心阈值
+    
+    unsigned char ucTermntPntNumTH;    // 终止点数阈值
+    unsigned char ucTermntWindwLenTH;  // 终止窗口长度
+    unsigned char ucConfirmPntNumTH;   // 确认点数阈值
+    unsigned char ucConfirmWindwLenTH; // 确认窗口长度
+    unsigned char ucCancleInitPntNumTH;// 取消初始化的点数阈值
+    
+    double dModelNoise;            // 模型噪声
+    double dVrMin;                 // 最小速度
+    double dVrMax;                 // 最大速度
+    double dEleAssocTH;            // 仰角关联阈值
+    double dAltAssocTH;            // 高度关联阈值
+    double dGamma;                 // 伽马值（关联门限参数）
+    double dDefAngleForTmpTrackTH; // 临时航迹默认偏角阈值
+    double dDefAngleForTgtTrackTH; // 目标航迹默认偏角阈值
+    double dConfidenceTH;          // 置信度阈值
+
+    unsigned char ucStandardInitPntNumTH;   // 标准初始化点数阈值
+    unsigned char ucStandardInitWindwLenTH; // 标准初始化窗口长度
+
+    double dQuickInitRngTH;          // 快速初始化距离阈值
+    unsigned char ucQuickInitPntNumTH;     // 快速初始化点数阈值
+    unsigned char ucQuickInitWindwLenTH;   // 快速初始化窗口长度
+    double dQuickInitAziAssocTH;     // 快速初始化方位关联阈值
+    double dQuickInitVrAssocTH;      // 快速初始化速度关联阈值
+
+    double dSlowInitVrTH;            // 高置信度速度阈值
+    double dSlowInitRngTH;           // 高置信度距离阈值
+    unsigned char ucSlowInitPntNumTH;      // 慢速（低置信度）初始化点数阈值
+    unsigned char ucSlowInitWindwLenTH;    // 慢速（低置信度）初始化窗口长度
+    double dSlowInitAziAssocTH;      // 低置信度航迹方位关联阈值
+    double dSlowInitVrAssocTH;       // 低置信度航迹多普勒速度关联阈值
 } AlgorithmParaInfo;
 
 //雷达系统参数
@@ -262,6 +259,7 @@ typedef struct
 typedef struct
 {
 	UINT16 usTrackID;			             /*航迹批号*/
+	bool bconfirmed;                         /*确认完成标志*/
 	UINT32 untar_type;                       //目标识别结果, 0：其他，1：无人机
 	UINT16 usFromTmpTrackID;                 /*与目标航迹对应的暂态航迹号*/
 	UINT32 unStartFrm;			             /*起批帧号*/
